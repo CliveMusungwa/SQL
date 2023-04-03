@@ -7,7 +7,8 @@ FROM regionalsales.orders AS O
 jOIN regionalsales.customers AS c
 ON O.CustomerID = c.CustomerID
 GROUP BY CustomerName
-ORDER BY Total_revenue_per_customer DESC;
+ORDER BY Total_revenue_per_customer DESC
+limit 10;
 
 /*looking at the amount of Products ordered by each customer*/
 SELECT c.CustomerName,
@@ -18,8 +19,9 @@ JOIN regionalsales.Customers AS c
 ON O.CustomerID = c.CustomerID
 JOIN regionalsales.products AS P
 ON O.productID = p.product_ID
-GROUP BY ProductName
-ORDER BY Products_ordered DESC;
+GROUP BY CustomerName
+ORDER BY Products_ordered DESC
+limit 10;
 
 /*Identifying Customers prefered sales channel*/
 SELECT c.CustomerName,
@@ -28,30 +30,22 @@ count(Order_id) AS Orders_made
 FROM regionalsales.orders AS O
 JOIN regionalsales.customers AS C
 ON c.customerID = o.CustomerID
-GROUP BY Sales_Channel
-ORDER BY Orders_made DESC;
-
-/*Looking at which cities customers buy products in the most*/
-SELECT c.customerName,
-s.City_Name,
-count(o.order_id) AS Order_amount
-FROM regionalsales.orders AS o
-JOIN regionalsales.customers AS c
-ON o.CustomerID = c.CustomerID
-JOIN regionalsales.store AS s
-ON o.storeID = s.Store_ID
-GROUP BY City_Name
-ORDER BY Order_amount DESC;
+GROUP BY CustomerName
+ORDER BY Orders_made DESC
+limit 10;
 
 /*Store Section*/
-/*Calculating how much total Revenue is made from each store*/
+/*Calculating how much total Revenue is made by storeid and state*/
 SELECT o.StoreID,
+s.State,
 o.CurrencyCode,
 round(sum(o.unit_price * o.Order_quantity - o.Discount_Applied),2) AS total_Revenue
 FROM Regionalsales.orders AS o
 JOIN regionalsales.store AS s
 ON o.storeID = s.Store_ID
-GROUP BY Store_ID;
+GROUP BY Store_ID
+ORDER BY total_revenue desc
+limit 10;
 
 /*profit margin in which state*/
 SELECT sub.State,
@@ -66,7 +60,8 @@ FROM (
     GROUP BY s.State, o.Unit_Price, o.Unit_Cost
 ) AS sub
 GROUP BY sub.State
-ORDER BY sub.State DESC;
+ORDER BY sub.State DESC
+limit 10;
 
 /*Revenue by state*/
 SELECT sub.State,
@@ -80,7 +75,8 @@ FROM
 	ON s.Store_ID = o.storeID
 	GROUP BY s.state) AS sub
     GROUP BY sub.State
-    ORDER BY sub.Revenue DESC;
+    ORDER BY sub.Revenue DESC
+    limit 10;
 
 /*Product Section*/
 /*Calculating total Revenue for each product*/
@@ -91,10 +87,10 @@ FROM regionalsales.orders AS o
 JOIN regionalsales.products AS p
 ON o.ProductID = p.Product_ID
 GROUP BY productName
-ORDER BY Total_revenue DESC;
+ORDER BY Total_revenue DESC
+limit 10;
 
 /*Comparing the population to the revenue per state*/
-
 /*Calculating the total Revenue and the using sub_query to calculate the profit of each product*/
 SELECT Sub.productName,
 sub.CurrencyCode,
@@ -109,52 +105,9 @@ FROM (
     GROUP BY p.productName, o.Unit_Cost
 ) AS Sub
 GROUP BY Sub.productName
-ORDER BY Profit DESC;
+ORDER BY Profit DESC
+limit 10;
 
-/*Calculating Total Profit to get and the Profit Margin*/
-SELECT Sub.productName,
-sub.CurrencyCode,
-round(sum(Sub.Total_revenue - Sub.Unit_Cost),2) AS Profit
-FROM (
-    SELECT p.productName,
-    o.Unit_Cost,
-    o.CurrencyCode,
-    round(sum(o.Unit_Price * o.Order_Quantity - o.Discount_Applied), 2) AS Total_revenue
-    FROM regionalsales.orders AS o
-    JOIN regionalsales.products AS p ON o.productID = p.product_ID
-    GROUP BY p.productName, o.Unit_Cost
-) AS Sub
-GROUP BY Sub.productName
-ORDER BY Profit DESC;
-
-/*SalesTeam section*/
-/*Looking at the revenue team have made*/
-SELECT sub.SalesTeam,
- round(SUM(sub.Unit_Price * sub.Order_Quantity - sub.Discount_Applied),2) AS revenue_by_teams
-FROM (
-  SELECT t.SalesTeam,
-  o.Unit_Price,
-  o.Order_Quantity,
-  o.Discount_Applied
-  FROM regionalsales.orders AS o
-  JOIN regionalsales.teams AS t
-  ON o.salesTeamID = t.salesTeam_ID
-) AS sub
-GROUP BY sub.SalesTeam
-ORDER BY revenue_by_teams DESC;
-
-/*Looking at the revenue created from teams in each region*/
-SELECT sub.Region,
-round(SUM(sub.Unit_Price + sub.Unit_Cost),2) AS revenue_by_teams
-FROM (
-SELECT Region, o.unit_price, o.unit_cost, count(o.SalesTeamID) AS Count_of_teams
-FROM regionalsales.orders AS o
-JOIN regionalsales.teams AS t
-ON t.SalesTeam_ID = o.SalesTeamID
-GROUP BY Region, o.unit_price, o.unit_cost
-) AS sub
-GROUP BY sub.Region
-ORDER BY Count_of_teams DESC;
 
 
 
