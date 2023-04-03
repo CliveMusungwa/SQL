@@ -18,8 +18,9 @@ round(sum(o.Profit),2) as total_profit
 FROM globalsales.orders as o
 JOIN globalsales.products as p
 ON p.Product_ID = o.Product_ID
-GROUP BY category, Order_Date
-ORDER BY total_profit DESC;
+GROUP BY category, Product_Name
+ORDER BY total_profit DESC
+limit 10;
 
 /*total profit earned from product categories each year*/
 SELECT 
@@ -42,8 +43,9 @@ YEAR(STR_TO_DATE(o.Order_Date, '%d/%m/%Y')) AS order_year
 FROM globalsales.orders AS o
 JOIN globalsales.customers AS c
 ON o.Customer_ID =c.Customer_ID
-GROUP BY order_year
-ORDER BY order_year DESC;
+GROUP BY order_year, country
+ORDER BY best_selling desc
+limit 10;
 
 /*identifying the performance of each city, state, and country*/
 SELECT 
@@ -62,36 +64,8 @@ FROM
 GROUP BY 
   c.city, c.state, c.country
 HAVING 
-  performance IS NOT NULL;
-  
-/*Customers analysis section*/
-/*order count value by customer segment */
-SELECT c.Customer_Name,
-c.segment,
-p.category,
-  COUNT(o.Order_ID) AS order_count
-FROM globalsales.orders AS o
-JOIN globalsales.customers AS c
-ON o.Customer_ID = c.Customer_ID
-JOIN globalsales.products AS p
-ON p.Product_ID = o.Product_ID
-GROUP BY c.segment
-ORDER BY order_count;
+  performance IS NOT NULL
+  limit 10;
 
-/*Identifying the distribution of customers by state, city and country */
-SELECT count(customer_id) as customers,
-city, 
-state,
-country 
- FROM globalsales.customers
- GROUP BY city, state, country
- ORDER BY customers DESC;
-
-/*most common shipping method*/
-SELECT p.Category, count(o.order_id) AS frequency, o.Ship_Mode
-FROM globalsales.orders AS o
-JOIN globalsales.products AS p ON p.Product_ID = o.Product_ID
-GROUP BY Category, Ship_Mode
-ORDER BY p.Category, frequency DESC
 
 
